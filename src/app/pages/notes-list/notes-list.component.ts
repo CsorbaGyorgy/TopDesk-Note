@@ -91,23 +91,24 @@ export class NotesListComponent implements OnInit {
 
   ngOnInit() {
     // we want to retrieve all notes from NotesService
-    this.notesService.getAll().subscribe((notes: Note[]) => {
-      this.notes = notes;
-      console.log(this.notes);
+      this.notes = this.notesService.getAll();
+    // this.filteredNotes = this.notesService.getAll();
       this.filter('');
-    })
   }
 
   
   deleteNote(note: Note) {
-    this.notesService.delete(note._id).subscribe((removedNoteDoc: Note) => {
-      // remove the note from the notes array
-      this.notes.splice(this.notes.indexOf(note), 1);
-      this.filter(this.filterInputElRef.nativeElement.value);
-    }) 
+    let noteId = this.notesService.getId(note);
+    this.notesService.delete(noteId);
+    this.filter(this.filterInputElRef.nativeElement.value);
+     
   }
 
-
+  generateNoteURL(note: Note) {
+    let noteId = this.notesService.getId(note);
+    return noteId;
+  }
+  
   filter(query: string) {
     query = query.toLowerCase().trim();
 
@@ -164,6 +165,7 @@ export class NotesListComponent implements OnInit {
     let noteCountObj: Object = {}; // format - key:value => NoteId:number (note object id : count)
 
     searchResults.forEach(note => {
+        let noteId = this.notesService.getId(note);  //get the notes id
 
       if (noteCountObj[note._id]) {
         noteCountObj[note._id] += 1;
@@ -174,9 +176,13 @@ export class NotesListComponent implements OnInit {
 
     this.filteredNotes = this.filteredNotes.sort((a: Note, b: Note) => {
 
-      let aCount = noteCountObj[a._id];
-      let bCount = noteCountObj[b._id];
+      let aId = this.notesService.getId(a);
+      let bId = this.notesService.getId(b);
 
+      let aCount = noteCountObj[aId];
+      let bCount = noteCountObj[bId];
+
+    
       return bCount - aCount;
     })
   }
